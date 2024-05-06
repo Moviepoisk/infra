@@ -22,7 +22,10 @@ spec:
           - name: DB_USER
             value: postgres
           - name: DB_PASSWORD
-            value: somerandompw
+            valueFrom:
+              secretKeyRef:
+                name: admin-secret
+                key: postgresPw
           - name: DB_HOST
             value: postgres-clusterip
           - name: SECRET_KEY
@@ -43,6 +46,5 @@ spec:
   ports:
   - port: 80
     targetPort: 8000
-
 
         

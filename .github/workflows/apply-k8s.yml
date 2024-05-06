@@ -1,0 +1,24 @@
+name: apply-k8s
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "k8s/**"
+      - "prod-k8s/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Save kubernetes config
+        run: doctl kubernetes cluster kubeconfig save dc7d55fc-c398-4cfd-9b39-f796bcc278ed
+      - name: Apply infrastructure
+        run: kubectl apply -f k8s && kubectl apply -f prod-k8s
