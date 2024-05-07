@@ -13,7 +13,28 @@ spec:
     spec:
       containers:
       - name: admin-svc
-        image: containous/whoami
+        image: arigatory/moviepoisk-admin
+        imagePullPolicy: Always
+        env:
+          - name: DB_NAME
+            value: movies_database
+          - name: DB_USER
+            value: postgres
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: admin-secret
+                key: postgresPw
+          - name: DB_HOST
+            value: localhost
+          - name: SECRET_KEY
+            value: 'django-very-secure-&k7sh3ku#(m_7@0=!57d19@e94=d0j1cpba=@n=f--is9p0#r5'
+          - name: DEBUG
+            value: 'True'
+          - name: ALLOWED_HOSTS
+            value: '127.0.0.1 0.0.0.0 moviepoisk.ru'
+          - name: DB_PORT
+            value: '5432'
 ---
 apiVersion: v1
 kind: Service
