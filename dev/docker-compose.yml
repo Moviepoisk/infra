@@ -1,0 +1,170 @@
+version: '3'
+services:
+  # FileAPI
+  storage:
+    build:
+      context: ../../storage-service
+      dockerfile: Dockerfile
+    ports:
+      - "8008:8008"
+    environment:
+      - STORAGE_DATABASE_NAME=${STORAGE_DATABASE_NAME}
+      - STORAGE_DATABASE_USER=${STORAGE_DATABASE_USER}
+      - STORAGE_DATABASE_PASSWORD=${STORAGE_DATABASE_PASSWORD}
+      - STORAGE_DATABASE_HOST=${STORAGE_DATABASE_HOST}
+      - STORAGE_DATABASE_PORT=${STORAGE_DATABASE_PORT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_SECURE=${MINIO_SECURE}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME}
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_storage:/data
+    command: server /data --console-address ":9001"
+
+  storage-db:
+    image: postgres:13-alpine
+    volumes:
+      - storage-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5434:5432
+   
+  # Admin
+  admin:
+    build:
+      context: ../../admin-service
+      dockerfile: Dockerfile
+      args:
+        - DEV=true
+    ports:
+      - "8001:8001"
+    volumes:
+      - static-data:/vol/web
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python load_data.py &&
+             python manage.py runserver 0.0.0.0:8001"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - movies-db-data:/var/lib/postgresql/data
+      - ../../admin-service/docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5433:5432
+
+  nginx:
+    build:
+      context: ../../admin-service/nginx
+    restart: always
+    depends_on:
+      - admin
+    ports:
+      - 8080:8001
+    volumes:
+      - static-data:/vol/static
+
+  # Etl
+  etl:
+    build:
+      context: ../../etl-service
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - db
+      - elasticsearch
+    environment:
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
+
+  # Api
+  search:
+    build:
+      context: ../../search-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ELASTIC_HOST=${ELASTIC_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - ELASTIC_PORT=${ELASTIC_PORT}
+      - PROJECT_NAME=${PROJECT_NAME}
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9200/_cluster/health"]
+      start_period: 30s
+      timeout: 10s
+      interval: 1s
+      retries: 10
+    volumes:
+      - ../../search-service/infra/elastic/elasticsearch/config.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 30s
+      timeout: 10s
+      interval: 1s
+      retries: 10
+    volumes:
+      - redis_data:/data
+  
+volumes:
+  # storage
+  storage-db-data:
+  # admin
+  movies-db-data:
+  static-data:
+  # search
+  elasticsearch_data:
+  # redis
+  redis_data:
+  # minio
+  minio_storage:
+
+
