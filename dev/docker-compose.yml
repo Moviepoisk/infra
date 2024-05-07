@@ -154,6 +154,20 @@ services:
     volumes:
       - redis_data:/data
   
+
+  auth:
+    build:
+      context: ../../auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTH_DB_NAME=${DB_NAME}
+      - AUTH_DB_USER=${DB_USER}
+      - AUTH_DB_PASSWORD=${DB_PASSWORD}
+      - AUTH_DB_HOST=${DB_HOST}
+      - AUTH_DB_PORT=${DB_PORT}
+  
 volumes:
   # storage
   storage-db-data:
