@@ -7,16 +7,6 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: admin.moviepoisk.ru
-      http:
-        paths:
-          - pathType: Prefix
-            path: "/"
-            backend:
-              service:
-                name: admin-clusterip
-                port:
-                  number: 8000
     - host: httpbin.moviepoisk.ru
       http:
         paths:
@@ -27,13 +17,45 @@ spec:
                 name: httpbin-clusterip
                 port:
                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jaeger-ingress
+  namespace: observability
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
     - host: jaeger.moviepoisk.ru
       http:
         paths:
-          - pathType: Prefix
-            path: "/"
+          - path: "/"
+            pathType: Prefix
             backend:
               service:
                 name: my-jaeger-query
                 port:
                   number: 16686
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: admin-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: admin.moviepoisk.ru
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-clusterip
+                port:
+                  number: 8000
