@@ -17,6 +17,16 @@ spec:
                 name: httpbin-clusterip
                 port:
                   number: 80
+    - host: auth.moviepoisk.ru
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: auth-clusterip
+                port:
+                  number: 8000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
