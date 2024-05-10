@@ -1,2 +1,3 @@
 prod-k8s/prod-secrets.yml
 k8s/prod-secrets.yml
+k3s/prod-secrets.yml
