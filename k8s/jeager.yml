@@ -1,4 +1,11 @@
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
-  name: simplest
+  name: my-jaeger
+  namespace: observability
+spec:
+  strategy: allInOne
+  allInOne:
+    options:
+      log-level: debug
+      memory.max-traces: 20000
