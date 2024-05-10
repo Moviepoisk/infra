@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: admin-svc
-        image: arigatory/moviepoisk-admin
+        image: kennethreitz/httpbin
         imagePullPolicy: Always
         env:
           - name: DB_NAME
@@ -46,6 +46,6 @@ spec:
     app: admin-svc
   ports:
   - port: 80
-    targetPort: 8000
+    targetPort: 80
 
         
