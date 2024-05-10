@@ -27,3 +27,13 @@ spec:
                 name: httpbin-clusterip
                 port:
                   number: 80
+    - host: jaeger.moviepoisk.ru
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: my-jaeger-query
+                port:
+                  number: 16686
