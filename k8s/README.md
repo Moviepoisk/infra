@@ -138,4 +138,11 @@ To connect to your database from outside the cluster execute the following comma
     kubectl port-forward --namespace redis svc/redis-master 6379:6379 &
     REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli -h 127.0.0.1 -p 6379
 
-  
+Ensure that DNS resolution is working properly within the Kubernetes cluster.
+Start a new pod for testing:
+
+kubectl run -it --rm busybox-dns-test --image=busybox --namespace=redis -- /bin/sh
+
+nslookup redis-master
+nslookup redis-master.redis.svc.cluster.local
+
