@@ -51,3 +51,49 @@ kubectl get pods -n observability
 
 kubectl port-forward svc/my-jaeger-query 16686:16686 -n observability
 Теперь UI будет доступен по адресу http://localhost:16686.
+
+
+# установка elastic
+
+Установка с помощью Elastic Cloud on Kubernetes (ECK):
+Установите Custom Resource Definitions (CRDs):
+Примените все CRD для ECK:
+
+kubectl apply -f https://download.elastic.co/downloads/eck/2.11.0/crds.yaml
+
+Установите ECK Operator:
+Примените оператор с помощью манифеста:
+
+kubectl apply -f https://download.elastic.co/downloads/eck/2.11.0/operator.yaml
+
+Проверьте состояние оператора:
+Убедитесь, что оператор успешно запущен:
+
+kubectl get pods -n elastic-system
+
+Разверните кластер Elasticsearch:
+
+Создайте YAML-файл elasticsearch-cluster.yaml со следующим содержимым:
+
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: quickstart
+  namespace: default
+spec:
+  version: 8.8.0
+  nodeSets:
+    - name: default
+      count: 3
+      config:
+        node.store.allow_mmap: false
+
+Примените манифест:
+Примените файл к вашему кластеру:
+
+kubectl apply -f elasticsearch-cluster.yaml
+
+Проверьте состояние кластера:
+Убедитесь, что все узлы запущены:
+
+kubectl get pods -n default
