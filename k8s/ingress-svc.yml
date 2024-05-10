@@ -5,14 +5,25 @@ metadata:
   labels:
     name: ingress-svc
 spec:
+  ingressClassName: nginx
   rules:
-  - host: admin.moviepoisk.ru
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: admin-clusterip
-            port: 
-              number: 80
+    - host: admin.moviepoisk.ru
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: admin-clusterip
+                port:
+                  number: 8000
+    - host: httpbin.moviepoisk.ru
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: httpbin-clusterip
+                port:
+                  number: 80

@@ -12,29 +12,31 @@ spec:
         app: admin-svc
     spec:
       containers:
-      - name: admin-svc
-        image: arigatory/moviepoisk-admin
-        imagePullPolicy: Always
-        env:
-          - name: DB_NAME
-            value: movies_database
-          - name: DB_USER
-            value: doadmin
-          - name: DB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: admin-secret
-                key: postgresPw
-          - name: DB_HOST
-            value: postgresql-do-user-16123669-0.c.db.ondigitalocean.com
-          - name: SECRET_KEY
-            value: 'django-very-secure-&k7sh3ku#(m_7@0=!57d19@e94=d0j1cpba=@n=f--is9p0#r5'
-          - name: DEBUG
-            value: 'True'
-          - name: ALLOWED_HOSTS
-            value: '127.0.0.1 0.0.0.0 moviepoisk.ru'
-          - name: DB_PORT
-            value: '25060'
+        - name: admin-svc
+          image: arigatory/moviepoisk-admin
+          imagePullPolicy: Always
+          env:
+            - name: DB_NAME
+              value: movies_database
+            - name: DB_USER
+              value: doadmin
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: postgresPw
+            - name: DB_HOST
+              value: postgresql-do-user-16123669-0.c.db.ondigitalocean.com
+            - name: SECRET_KEY
+              value: "django-very-secure-&k7sh3ku#(m_7@0=!57d19@e94=d0j1cpba=@n=f--is9p0#r5"
+            - name: DEBUG
+              value: "True"
+            - name: ALLOWED_HOSTS
+              value: "127.0.0.1 0.0.0.0 admin.moviepoisk.ru"
+            - name: DB_PORT
+              value: "25060"
+          ports:
+            - containerPort: 8000
 ---
 apiVersion: v1
 kind: Service
@@ -45,7 +47,5 @@ spec:
   selector:
     app: admin-svc
   ports:
-  - port: 80
-    targetPort: 8000
-
-        
+    - port: 8000
+      targetPort: 8000
