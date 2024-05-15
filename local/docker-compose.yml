@@ -7,8 +7,28 @@ services:
       - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=movies_database
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=123qwe
+      - POSTGRES_HOST=localhost
     ports:
       - 5432:5432
+
+  auth:
+    build:
+      context: ../../auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTH_DB_NAME=${DB_NAME}
+      - AUTH_DB_USER=${DB_USER}
+      - AUTH_DB_PASSWORD=${DB_PASSWORD}
+      - AUTH_DB_HOST=${DB_HOST}
+      - AUTH_DB_PORT=${DB_PORT}
+
+
+
 
   # FileAPI
   storage:
@@ -105,18 +125,7 @@ services:
       - redis_data:/data
   
 
-  auth:
-    build:
-      context: ../../auth-service
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - AUTH_DB_NAME=${DB_NAME}
-      - AUTH_DB_USER=${DB_USER}
-      - AUTH_DB_PASSWORD=${DB_PASSWORD}
-      - AUTH_DB_HOST=${DB_HOST}
-      - AUTH_DB_PORT=${DB_PORT}
+
   
 volumes:
   postgres-data:
