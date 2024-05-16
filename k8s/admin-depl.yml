@@ -32,7 +32,9 @@ spec:
             - name: DEBUG
               value: "True"
             - name: ALLOWED_HOSTS
-              value: "127.0.0.1 0.0.0.0 admin.moviepoisk.ru https://admin.moviepoisk.ru "
+              value: "127.0.0.1 0.0.0.0 admin.moviepoisk.ru https://admin.moviepoisk.ru"
+            - name: CSRF_TRUSTED_ORIGINS
+              value: "https://admin.moviepoisk.ru"
             - name: DB_PORT
               value: "25060"
           ports:
