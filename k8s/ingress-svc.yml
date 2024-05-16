@@ -2,10 +2,18 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-svc
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
   labels:
     name: ingress-svc
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - httpbin.moviepoisk.ru
+        - auth.moviepoisk.ru
+        - admin.moviepoisk.ru
+      secretName: moviepoisk-tls
   rules:
     - host: httpbin.moviepoisk.ru
       http:
@@ -27,6 +35,16 @@ spec:
                 name: auth-clusterip
                 port:
                   number: 8000
+    - host: admin.moviepoisk.ru
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: admin-clusterip
+                port:
+                  number: 8000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -35,8 +53,13 @@ metadata:
   namespace: observability
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - jaeger.moviepoisk.ru
+      secretName: moviepoisk-tls
   rules:
     - host: jaeger.moviepoisk.ru
       http:
@@ -48,24 +71,3 @@ spec:
                 name: my-jaeger-query
                 port:
                   number: 16686
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: admin-ingress
-  namespace: default
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: admin.moviepoisk.ru
-      http:
-        paths:
-          - path: "/"
-            pathType: Prefix
-            backend:
-              service:
-                name: admin-clusterip
-                port:
-                  number: 8000
